@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Little Sky Home Supplies — POS & Inventory</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0D1117;--card:#161B22;--border:#21262D;
+  --gold:#F0A500;--gold2:#FDD96A;
+  --green:#3FB950;--red:#F85149;--blue:#58A6FF;--orange:#F97316;
+  --muted:#8B949E;--text:#E6EDF3;--radius:10px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;font-size:15px;min-height:100vh;}
+.nav{background:var(--card);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100;}
+.nav-brand{color:var(--gold);font-weight:700;font-size:16px;padding:14px 0;letter-spacing:0.5px;}
+.nav-links{display:flex;gap:4px;flex-wrap:wrap;padding:8px 0;}
+.nav-links button{color:var(--muted);background:transparent;border:none;padding:7px 12px;border-radius:6px;font-size:13px;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:inherit;}
+.nav-links button:hover,.nav-links button.active{background:rgba(240,165,0,0.12);color:var(--gold);}
+.container{max-width:960px;margin:0 auto;padding:20px 16px;}
+.page-title{font-size:20px;font-weight:700;margin-bottom:4px;}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+.card-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;font-family:monospace;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;border-left:3px solid var(--gold);}
+.stat-val{font-size:22px;font-weight:700;color:var(--gold);font-family:monospace;}
+.stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+.form-group{margin-bottom:14px;}
+label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;font-family:monospace;}
+input,select,textarea{width:100%;background:#0D1117;border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;transition:border 0.2s;font-family:inherit;}
+input:focus,select:focus{border-color:var(--gold);}
+select option{background:#161B22;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;font-family:inherit;white-space:nowrap;}
+.btn-gold{background:var(--gold);color:#000;}
+.btn-gold:hover{background:var(--gold2);}
+.btn-green{background:var(--green);color:#000;}
+.btn-green:hover{opacity:0.85;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-blue{background:var(--blue);color:#000;}
+.btn-blue:hover{opacity:0.85;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+.btn-full{width:100%;}
+.btn-sm{padding:6px 12px;font-size:11px;}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:10px 12px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);font-family:monospace;white-space:nowrap;}
+td{padding:11px 12px;border-bottom:1px solid rgba(33,38,45,0.6);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.mono{font-family:monospace;}
+.badge{display:inline-block;padding:3px 9px;border-radius:12px;font-size:10px;font-family:monospace;font-weight:600;}
+.badge-green{background:rgba(63,185,80,0.15);color:var(--green);}
+.badge-red{background:rgba(248,81,73,0.15);color:var(--red);}
+.badge-gold{background:rgba(240,165,0,0.15);color:var(--gold);}
+.badge-blue{background:rgba(88,166,255,0.15);color:var(--blue);}
+.badge-orange{background:rgba(249,115,22,0.15);color:var(--orange);}
+.badge-muted{background:rgba(139,148,158,0.15);color:var(--muted);}
+.alert{padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px;}
+.alert-success{background:rgba(63,185,80,0.12);border:1px solid rgba(63,185,80,0.3);color:var(--green);}
+.alert-error{background:rgba(248,81,73,0.12);border:1px solid rgba(248,81,73,0.3);color:var(--red);}
+.alert-warn{background:rgba(240,165,0,0.12);border:1px solid rgba(240,165,0,0.3);color:var(--gold);}
+.low-stock-row td{background:rgba(248,81,73,0.04);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:600px){.grid2{grid-template-columns:1fr;}.grid3{grid-template-columns:1fr 1fr;}}
+@media(max-width:400px){.grid3{grid-template-columns:1fr;}}
+.cart-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:8px;}
+.cart-item:last-child{border-bottom:none;}
+.recon-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.recon-row:last-child{border-bottom:none;}
+.restock-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(248,81,73,0.07);border:1px solid rgba(248,81,73,0.2);border-radius:7px;margin-bottom:8px;}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0;}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;top:16px;right:16px;z-index:2000;padding:12px 18px;border-radius:8px;font-size:13px;font-family:monospace;box-shadow:0 4px 20px rgba(0,0,0,0.5);animation:fadeIn 0.2s ease;max-width:320px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Invoice / Receipt Print Styles ── */
+@media print {
+  body{background:#fff!important;color:#000!important;}
+  .no-print{display:none!important;}
+  .print-area{display:block!important;}
+  .nav,.container>.no-print{display:none!important;}
+}
+.print-area{display:none;}
+.invoice-doc{background:#fff;color:#000;padding:32px;max-width:600px;margin:0 auto;font-family:'Georgia',serif;}
+.invoice-header{text-align:center;margin-bottom:24px;border-bottom:2px solid #000;padding-bottom:16px;}
+.invoice-store-name{font-size:22px;font-weight:700;letter-spacing:1px;}
+.invoice-store-details{font-size:12px;color:#444;margin-top:4px;}
+.invoice-title{font-size:16px;font-weight:700;text-align:center;margin:16px 0 8px;text-transform:uppercase;letter-spacing:2px;}
+.invoice-meta{display:flex;justify-content:space-between;font-size:12px;margin-bottom:16px;color:#333;}
+.invoice-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+.invoice-table th{background:#f0f0f0;padding:8px 10px;font-size:11px;text-align:left;border:1px solid #ddd;text-transform:uppercase;}
+.invoice-table td{padding:8px 10px;font-size:13px;border:1px solid #ddd;}
+.invoice-table tr:nth-child(even) td{background:#fafafa;}
+.invoice-totals{border-top:2px solid #000;padding-top:12px;margin-top:8px;}
+.invoice-total-row{display:flex;justify-content:space-between;padding:4px 0;font-size:14px;}
+.invoice-grand-total{font-size:18px;font-weight:700;color:#000;border-top:1px solid #000;margin-top:8px;padding-top:8px;}
+.invoice-footer{text-align:center;font-size:11px;color:#666;margin-top:20px;border-top:1px solid #ddd;padding-top:12px;}
+.invoice-paid-stamp{text-align:center;margin:16px 0;}
+.invoice-paid-stamp span{display:inline-block;border:3px solid #3FB950;color:#3FB950;padding:8px 24px;border-radius:4px;font-size:20px;font-weight:700;letter-spacing:3px;transform:rotate(-5deg);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ── STORE CONFIG — Edit these when you have the store details ─────────────────
+const STORE = {
+  name:    "LITTLE SKY HOME SUPPLIES",
+  tagline: "Your Trusted Home & Hardware Specialists",
+  address: "In front Nyaniba Hotel, Off Cape Coast-Accra Highway, Yamoransa",
+  phone:   "0241537176",
+  email:   "",
+};
+
+// ── SheetDB API ───────────────────────────────────────────────────────────────
+// Replace with your SheetDB URL after connecting Google Sheets
+const DB = "https://sheetdb.io/api/v1/qcbm33qlsi5la";
+
+const OWNER_PASSWORD = "littlesky2026"; // Owner password — change when ready
+
+const { useState, useEffect, useMemo, useCallback } = React;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const TODAY = new Date();
+const todayStr = TODAY.toISOString().split("T")[0];
+const GHS = n => `GHS ${(Number(n)||0).toFixed(2)}`;
+const uid = () => Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase();
+const fmtDate = d => new Date(d).toLocaleDateString("en-GB");
+const fmtTime = d => new Date(d).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+const fmtDateTime = d => `${fmtDate(d)} ${fmtTime(d)}`;
+
+// ── LocalStorage ──────────────────────────────────────────────────────────────
+const LS = "hw_store_v1";
+function lsLoad(){ try{ const r=localStorage.getItem(LS); return r?JSON.parse(r):{products:[],sales:[],sales_items:[],closing:[]}; }catch(e){ return {products:[],sales:[],sales_items:[],closing:[]}; } }
+function lsSave(db){ try{ localStorage.setItem(LS,JSON.stringify(db)); }catch(e){} }
+
+// ── SheetDB helpers ───────────────────────────────────────────────────────────
+function dbGet(sheet){ return fetch(`${DB}?sheet=${sheet}`).then(r=>r.json()).catch(()=>[]); }
+function dbPost(sheet,row){ return fetch(`${DB}?sheet=${sheet}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:[row]})}).then(r=>r.json()).catch(()=>({error:"Network error"})); }
+function dbPatch(sheet,col,val,updates){ return fetch(`${DB}/${col}/${encodeURIComponent(val)}?sheet=${sheet}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:updates})}).then(r=>r.json()).catch(()=>({error:"Network error"})); }
+
+async function loadAllData(){
+  try {
+    const [products,sales,sales_items,closing] = await Promise.all([
+      dbGet("Products"),dbGet("Sales"),dbGet("SalesItems"),dbGet("Closing")
+    ]);
+    const fresh = {
+      products: products||[],
+      sales: sales||[],
+      sales_items: sales_items||[],
+      closing: closing||[]
+    };
+    lsSave(fresh);
+    return fresh;
+  } catch(e){ return lsLoad(); }
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+const Spinner = ({msg="Loading..."}) => (
+  <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px",gap:"16px"}}>
+    <div className="spinner" style={{width:"36px",height:"36px"}}/>
+    <div style={{color:"var(--muted)",fontSize:"13px",fontFamily:"monospace"}}>{msg}</div>
+  </div>
+);
+
+// ── Invoice / Receipt Component ───────────────────────────────────────────────
+function InvoiceDoc({type, sale, items, products, onClose}){
+  const isPaid = type === "receipt";
+  const invoiceNo = sale ? `${isPaid?"RCP":"INV"}-${sale.id}` : "";
+  const handlePrint = () => window.print();
+  const handlePDF = () => {
+    window.print(); // Browser print to PDF
+  };
+
+  const getProduct = id => products.find(p=>p.id===id||p.id===String(id));
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"flex-start",justifyContent:"center",zIndex:1000,overflowY:"auto",padding:"20px"}}>
+      {/* Controls */}
+      <div className="no-print" style={{position:"fixed",top:16,right:16,display:"flex",gap:"8px",zIndex:1001}}>
+        <button className="btn btn-gold" onClick={handlePrint}>🖨 Print</button>
+        <button className="btn btn-blue" onClick={handlePDF}>⬇ PDF</button>
+        <button className="btn btn-ghost" onClick={onClose}>✕ Close</button>
+      </div>
+
+      {/* Document */}
+      <div className="invoice-doc" style={{marginTop:"60px",boxShadow:"0 8px 40px rgba(0,0,0,0.5)"}}>
+
+        {/* Header */}
+        <div className="invoice-header">
+          <div className="invoice-store-name">{STORE.name}</div>
+          <div className="invoice-store-details">{STORE.tagline}</div>
+          <div className="invoice-store-details">{STORE.address}</div>
+          <div className="invoice-store-details">📞 {STORE.phone}{STORE.email?` | ✉ ${STORE.email}`:""}</div>
+        </div>
+
+        {/* Document title */}
+        <div className="invoice-title">{isPaid ? "Official Receipt" : "Invoice / Proforma"}</div>
+
+        {/* Meta */}
+        <div className="invoice-meta">
+          <div>
+            <div><strong>{isPaid?"Receipt":"Invoice"} No:</strong> {invoiceNo}</div>
+            <div><strong>Date:</strong> {sale ? fmtDate(sale.timestamp) : fmtDate(new Date())}</div>
+            {isPaid && <div><strong>Time:</strong> {sale ? fmtTime(sale.timestamp) : fmtTime(new Date())}</div>}
+          </div>
+          <div style={{textAlign:"right"}}>
+            {isPaid && <div><strong>Attendant:</strong> {sale?.attendant_name}</div>}
+            {isPaid && <div><strong>Payment:</strong> {sale?.payment_method}</div>}
+            {isPaid && sale?.momo_reference && <div><strong>Ref:</strong> {sale.momo_reference}</div>}
+          </div>
+        </div>
+
+        {/* Items table */}
+        <table className="invoice-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              <th style={{textAlign:"right"}}>Qty</th>
+              <th style={{textAlign:"right"}}>Unit Price</th>
+              <th style={{textAlign:"right"}}>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items && items.map((item,i) => {
+              const product = getProduct(item.product_id);
+              const name = product ? product.name : item.product_name || `Product ${item.product_id}`;
+              const qty = Number(item.quantity)||0;
+              const price = Number(item.price_at_sale)||0;
+              return (
+                <tr key={i}>
+                  <td style={{color:"#666"}}>{i+1}</td>
+                  <td>{name}</td>
+                  <td style={{textAlign:"right",fontFamily:"monospace"}}>{qty}</td>
+                  <td style={{textAlign:"right",fontFamily:"monospace"}}>GHS {price.toFixed(2)}</td>
+                  <td style={{textAlign:"right",fontFamily:"monospace",fontWeight:"600"}}>GHS {(qty*price).toFixed(2)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* Totals */}
+        <div className="invoice-totals">
+          <div className="invoice-total-row">
+            <span>Subtotal</span>
+            <span style={{fontFamily:"monospace"}}>{GHS(items?.reduce((s,i)=>s+(Number(i.quantity)*Number(i.price_at_sale)),0))}</span>
+          </div>
+          <div className="invoice-total-row invoice-grand-total">
+            <span>TOTAL</span>
+            <span style={{fontFamily:"monospace"}}>{sale ? GHS(sale.total_amount) : GHS(items?.reduce((s,i)=>s+(Number(i.quantity)*Number(i.price_at_sale)),0))}</span>
+          </div>
+        </div>
+
+        {/* PAID stamp on receipt */}
+        {isPaid && (
+          <div className="invoice-paid-stamp">
+            <span>PAID</span>
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="invoice-footer">
+          {isPaid
+            ? "Thank you for your business! Please keep this receipt for your records."
+            : "This invoice is valid for 7 days. Payment due on collection."}
+          <br/>
+          {STORE.name} — {STORE.phone}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main App ──────────────────────────────────────────────────────────────────
+function App(){
+  const [role,setRole]       = useState(null);
+  const [tab,setTab]         = useState("pos");
+  const [loading,setLoading] = useState(false);
+  const [syncing,setSyncing] = useState(false);
+  const [dbOk,setDbOk]       = useState(false);
+  const [toast,setToast]     = useState(null);
+
+  // Data
+  const [products,setProducts]   = useState([]);
+  const [sales,setSales]         = useState([]);
+  const [salesItems,setSalesItems] = useState([]);
+  const [closing,setClosing]     = useState([]);
+
+  // POS state
+  const [cart,setCart]           = useState([]);
+  const [selProduct,setSelProduct] = useState("");
+  const [selQty,setSelQty]       = useState(1);
+  const [attendant,setAttendant] = useState("");
+  const [payMethod,setPayMethod] = useState("");
+  const [momoRef,setMomoRef]     = useState("");
+
+  // Invoice/Receipt
+  const [docModal,setDocModal]   = useState(null); // {type, sale, items}
+
+  // Inventory
+  const [newProduct,setNewProduct] = useState({name:"",unit:"pcs",cost_price:"",selling_price:"",current_stock:"0",reorder_level:"5"});
+  const [restockId,setRestockId]   = useState("");
+  const [restockQty,setRestockQty] = useState("");
+  const [restockCost,setRestockCost] = useState("");
+
+  // Reconciliation
+  const [actualCash,setActualCash] = useState("");
+  const [actualMomo,setActualMomo] = useState("");
+  const [reconBy,setReconBy]       = useState("");
+  const [reconResult,setReconResult] = useState(null);
+
+  // Password
+  const [showPw,setShowPw]   = useState(false);
+  const [pwInput,setPwInput] = useState("");
+  const [pwError,setPwError] = useState("");
+
+  const showToast = (msg,color="var(--green)") => { setToast({msg,color}); setTimeout(()=>setToast(null),4000); };
+
+  // Load data
+  const loadData = useCallback(async()=>{
+    setLoading(true);
+    const cached = lsLoad();
+    if(cached.products.length){ setProducts(cached.products); setSales(cached.sales); setSalesItems(cached.sales_items||[]); setClosing(cached.closing||[]); setDbOk(true); setLoading(false); }
+    try {
+      const fresh = await loadAllData();
+      setProducts(fresh.products||[]);
+      setSales(fresh.sales||[]);
+      setSalesItems(fresh.sales_items||fresh.SalesItems||[]);
+      setClosing(fresh.closing||fresh.Closing||[]);
+      setDbOk(true);
+    } catch(e){}
+    setLoading(false);
+  },[]);
+
+  useEffect(()=>{ loadData(); },[]);
+
+  // Derived
+  const todaySales = useMemo(()=>sales.filter(s=>s.timestamp&&s.timestamp.startsWith(todayStr)),[sales]);
+  const todayCash  = useMemo(()=>todaySales.filter(s=>s.payment_method==="Cash").reduce((sum,s)=>sum+Number(s.total_amount),0),[todaySales]);
+  const todayMomo  = useMemo(()=>todaySales.filter(s=>s.payment_method!=="Cash").reduce((sum,s)=>sum+Number(s.total_amount),0),[todaySales]);
+  const lowStock   = useMemo(()=>products.filter(p=>Number(p.current_stock)<=Number(p.reorder_level)),[products]);
+  const stockValue = useMemo(()=>products.reduce((s,p)=>s+Number(p.current_stock)*Number(p.cost_price),0),[products]);
+  const cartTotal  = useMemo(()=>cart.reduce((s,i)=>s+i.total,0),[cart]);
+  const todayClosed = useMemo(()=>closing.find(c=>c.date===todayStr),[closing]);
+
+  // Add to cart
+  const addToCart = () => {
+    const product = products.find(p=>p.id===selProduct||p.id===String(selProduct));
+    if(!product){showToast("Please select a product","var(--red)");return;}
+    const qty = Number(selQty);
+    if(!qty||qty<1){showToast("Enter a valid quantity","var(--red)");return;}
+    const inCart = cart.find(i=>i.product_id===selProduct);
+    const alreadyQty = inCart?inCart.qty:0;
+    if(alreadyQty+qty>Number(product.current_stock)){
+      showToast(`Only ${product.current_stock} in stock (${alreadyQty} already in cart)`,"var(--red)"); return;
+    }
+    if(inCart){
+      setCart(prev=>prev.map(i=>i.product_id===selProduct?{...i,qty:i.qty+qty,total:(i.qty+qty)*i.price}:i));
+    } else {
+      setCart(prev=>[...prev,{product_id:selProduct,name:product.name,qty,price:Number(product.selling_price),total:qty*Number(product.selling_price)}]);
+    }
+    setSelQty(1);
+  };
+
+  const removeFromCart = id => setCart(prev=>prev.filter(i=>i.product_id!==id));
+
+  // Generate Invoice (before payment)
+  const generateInvoice = () => {
+    if(cart.length===0){showToast("Cart is empty","var(--red)");return;}
+    const fakeItems = cart.map(i=>({product_id:i.product_id,product_name:i.name,quantity:i.qty,price_at_sale:i.price}));
+    setDocModal({type:"invoice",sale:{total_amount:cartTotal,timestamp:new Date().toISOString(),attendant_name:attendant||"—"},items:fakeItems});
+  };
+
+  // Complete Sale + Generate Receipt
+  const completeSale = async() => {
+    if(cart.length===0){showToast("Cart is empty","var(--red)");return;}
+    if(!attendant.trim()){showToast("Enter attendant name","var(--red)");return;}
+    if(!payMethod){showToast("Select payment method","var(--red)");return;}
+    if(["MTN MoMo","Telecel Cash","AT Money"].includes(payMethod)&&!momoRef.trim()){
+      showToast("MoMo Transaction ID is required","var(--red)");return;
+    }
+    setSyncing(true);
+    const saleId = uid();
+    const now = new Date().toISOString();
+    const saleRow = {
+      id:saleId, timestamp:now, total_amount:cartTotal,
+      payment_method:payMethod, momo_reference:momoRef||"",
+      attendant_name:attendant
+    };
+
+    try {
+      // Save sale
+      await dbPost("Sales",saleRow);
+      // Save items and update stock
+      for(const item of cart){
+        const itemRow = {id:uid(),sale_id:saleId,product_id:item.product_id,quantity:item.qty,price_at_sale:item.price};
+        await dbPost("SalesItems",itemRow);
+        // Deduct stock
+        const product = products.find(p=>p.id===item.product_id||p.id===String(item.product_id));
+        if(product){
+          const newStock = Number(product.current_stock)-item.qty;
+          await dbPatch("Products","id",item.product_id,{current_stock:newStock});
+        }
+      }
+
+      // Update local state
+      const db = lsLoad();
+      db.sales.push(saleRow);
+      cart.forEach(item=>{
+        db.sales_items.push({id:uid(),sale_id:saleId,product_id:item.product_id,quantity:item.qty,price_at_sale:item.price});
+        db.products = db.products.map(p=>{
+          if(p.id===item.product_id||p.id===String(item.product_id)){
+            return {...p,current_stock:Number(p.current_stock)-item.qty};
+          }
+          return p;
+        });
+      });
+      lsSave(db);
+      setProducts(db.products);
+      setSales(db.sales);
+      setSalesItems(db.sales_items);
+
+      // Show receipt
+      const receiptItems = cart.map(i=>({product_id:i.product_id,product_name:i.name,quantity:i.qty,price_at_sale:i.price}));
+      setDocModal({type:"receipt",sale:{...saleRow},items:receiptItems});
+      setCart([]); setPayMethod(""); setMomoRef(""); setAttendant("");
+      showToast("✓ Sale completed successfully!");
+    } catch(e){
+      showToast("Error saving sale: "+e.message,"var(--red)");
+    }
+    setSyncing(false);
+  };
+
+  // Add product
+  const addProduct = async() => {
+    if(!newProduct.name.trim()||!newProduct.selling_price){showToast("Name and selling price required","var(--red)");return;}
+    setSyncing(true);
+    const row = {id:uid(),...newProduct};
+    try {
+      await dbPost("Products",row);
+      const db=lsLoad(); db.products.push(row); lsSave(db);
+      setProducts(p=>[...p,row]);
+      setNewProduct({name:"",unit:"pcs",cost_price:"",selling_price:"",current_stock:"0",reorder_level:"5"});
+      showToast("✓ Product added");
+    } catch(e){ showToast("Error: "+e.message,"var(--red)"); }
+    setSyncing(false);
+  };
+
+  // Restock product
+  const restockProduct = async() => {
+    if(!restockId||!restockQty){showToast("Select product and enter quantity","var(--red)");return;}
+    setSyncing(true);
+    const product = products.find(p=>p.id===restockId);
+    if(!product){showToast("Product not found","var(--red)");setSyncing(false);return;}
+    const newStock = Number(product.current_stock)+Number(restockQty);
+    const updates = {current_stock:newStock};
+    if(restockCost) updates.cost_price = Number(restockCost);
+    try {
+      await dbPatch("Products","id",restockId,updates);
+      const db=lsLoad();
+      db.products=db.products.map(p=>p.id===restockId?{...p,...updates}:p);
+      lsSave(db);
+      setProducts(prev=>prev.map(p=>p.id===restockId?{...p,...updates}:p));
+      setRestockId(""); setRestockQty(""); setRestockCost("");
+      showToast(`✓ Added ${restockQty} units to ${product.name}`);
+    } catch(e){ showToast("Error: "+e.message,"var(--red)"); }
+    setSyncing(false);
+  };
+
+  // Reconciliation
+  const submitRecon = async() => {
+    if(!actualCash||actualMomo===""){showToast("Enter cash and MoMo amounts","var(--red)");return;}
+    if(!reconBy.trim()){showToast("Enter attendant name","var(--red)");return;}
+    setSyncing(true);
+    const cashDiff = Number(actualCash)-todayCash;
+    const momoDiff = Number(actualMomo)-todayMomo;
+    const status = Math.abs(cashDiff)<0.01&&Math.abs(momoDiff)<0.01?"Matched":"Discrepancy";
+    const row = {
+      id:uid(), date:todayStr, expected_cash:todayCash, actual_cash:Number(actualCash),
+      expected_momo:todayMomo, actual_momo:Number(actualMomo),
+      cash_diff:cashDiff, momo_diff:momoDiff, status, closed_by:reconBy,
+      closed_at:new Date().toISOString()
+    };
+    try {
+      await dbPost("Closing",row);
+      const db=lsLoad(); db.closing.push(row); lsSave(db);
+      setClosing(prev=>[...prev,row]);
+      setReconResult(row);
+      setActualCash(""); setActualMomo(""); setReconBy("");
+      showToast(status==="Matched"?"✓ Books balanced!":"⚠ Discrepancy recorded",status==="Matched"?"var(--green)":"var(--red)");
+    } catch(e){ showToast("Error: "+e.message,"var(--red)"); }
+    setSyncing(false);
+  };
+
+  // Password
+  const handleOwnerLogin = () => {
+    if(pwInput===OWNER_PASSWORD){ setRole("owner"); setTab("dashboard"); setShowPw(false); setPwInput(""); setPwError(""); }
+    else { setPwError("Incorrect password. Try again."); setPwInput(""); }
+  };
+
+  // ── ROLE SELECTION ────────────────────────────────────────────────────────
+  if(!role) return (
+    <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
+      {loading&&<Spinner msg="Loading data..."/>}
+
+      {/* Password Modal */}
+      {showPw&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:"20px"}}>
+          <div style={{background:"var(--card)",border:"1px solid var(--gold)",borderRadius:"16px",padding:"32px",width:"360px",maxWidth:"100%",textAlign:"center"}}>
+            <div style={{fontSize:"32px",marginBottom:"12px"}}>👑</div>
+            <div style={{fontSize:"16px",fontWeight:"700",color:"var(--gold)",marginBottom:"4px"}}>Owner Access</div>
+            <div style={{fontSize:"12px",color:"var(--muted)",marginBottom:"20px"}}>Enter your password to continue</div>
+            <input type="password" value={pwInput} onChange={e=>{setPwInput(e.target.value);setPwError("");}}
+              onKeyDown={e=>e.key==="Enter"&&handleOwnerLogin()}
+              placeholder="Password" autoFocus
+              style={{textAlign:"center",fontSize:"18px",letterSpacing:"4px",marginBottom:"10px"}}/>
+            {pwError&&<div style={{color:"var(--red)",fontSize:"12px",marginBottom:"10px",fontFamily:"monospace"}}>{pwError}</div>}
+            <button className="btn btn-gold btn-full" onClick={handleOwnerLogin} style={{marginBottom:"8px"}}>ENTER</button>
+            <button className="btn btn-ghost btn-full" onClick={()=>{setShowPw(false);setPwInput("");setPwError("");}}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {!loading&&<>
+        <div style={{fontSize:"11px",color:"var(--gold)",letterSpacing:"3px",textTransform:"uppercase",fontFamily:"monospace",marginBottom:"6px"}}>Welcome to</div>
+        <div style={{fontSize:"24px",fontWeight:"700",color:"var(--text)",marginBottom:"2px",textAlign:"center"}}>{STORE.name}</div>
+        <div style={{fontSize:"12px",color:"var(--muted)",marginBottom:"6px"}}>{STORE.tagline}</div>
+        <div style={{fontSize:"11px",color:dbOk?"var(--green)":"var(--red)",fontFamily:"monospace",marginBottom:"32px"}}>{dbOk?"● System Ready":"⚠ Connecting..."}</div>
+        <div style={{display:"flex",gap:"16px",flexWrap:"wrap",justifyContent:"center"}}>
+          <button onClick={()=>setShowPw(true)} style={{background:"rgba(240,165,0,0.1)",border:"2px solid var(--gold)",borderRadius:"12px",padding:"28px 36px",cursor:"pointer",color:"var(--gold)",fontFamily:"inherit",fontSize:"15px",fontWeight:"700",minWidth:"180px"}}>
+            <div style={{fontSize:"30px",marginBottom:"8px"}}>👑</div>
+            <div>Owner</div>
+            <div style={{fontSize:"11px",color:"var(--muted)",marginTop:"4px",fontWeight:"normal"}}>Full access + reports</div>
+          </button>
+          <button onClick={()=>{setRole("attendant");setTab("pos");}} style={{background:"rgba(88,166,255,0.1)",border:"2px solid var(--blue)",borderRadius:"12px",padding:"28px 36px",cursor:"pointer",color:"var(--blue)",fontFamily:"inherit",fontSize:"15px",fontWeight:"700",minWidth:"180px"}}>
+            <div style={{fontSize:"30px",marginBottom:"8px"}}>🛒</div>
+            <div>Attendant</div>
+            <div style={{fontSize:"11px",color:"var(--muted)",marginTop:"4px",fontWeight:"normal"}}>POS + invoicing</div>
+          </button>
+        </div>
+        <div style={{marginTop:"48px",textAlign:"center",borderTop:"1px solid var(--border)",paddingTop:"20px",width:"100%",maxWidth:"400px"}}>
+          <div style={{fontSize:"10px",color:"var(--muted)",letterSpacing:"1px",textTransform:"uppercase",fontFamily:"monospace"}}>Software developed by</div>
+          <div style={{fontSize:"14px",color:"var(--gold)",fontWeight:"700",marginTop:"3px"}}>Yafia Consulting</div>
+          <div style={{fontSize:"10px",color:"var(--muted)",fontStyle:"italic"}}>"Your Business Numbers Made Simple"</div>
+        </div>
+      </>}
+    </div>
+  );
+
+  const isMomoPayment = ["MTN MoMo","Telecel Cash","AT Money"].includes(payMethod);
+  const isOwner = role==="owner";
+
+  // Nav tabs based on role
+  const ownerTabs  = [["dashboard","📊 Dashboard"],["pos","🛒 POS"],["inventory","📦 Inventory"],["reconcile","💰 End of Day"],["history","📋 History"]];
+  const attendantTabs = [["pos","🛒 POS"],["inventory","📦 Stock View"]];
+  const tabs = isOwner ? ownerTabs : attendantTabs;
+
+  return (
+    <div style={{minHeight:"100vh",background:"var(--bg)"}}>
+      {/* Toast */}
+      {toast&&<div className="toast" style={{background:toast.color,color:toast.color==="var(--green)"?"#000":"#fff"}}>{toast.msg}</div>}
+
+      {/* Invoice/Receipt Modal */}
+      {docModal&&<InvoiceDoc type={docModal.type} sale={docModal.sale} items={docModal.items} products={products} onClose={()=>setDocModal(null)}/>}
+
+      {/* Nav */}
+      <nav className="nav">
+        <div className="nav-brand">🏪 {STORE.name}</div>
+        <div className="nav-links">
+          {tabs.map(([k,l])=>(
+            <button key={k} className={tab===k?"active":""} onClick={()=>setTab(k)}>{l}</button>
+          ))}
+          <button onClick={loadData} title="Refresh data" style={{color:"var(--muted)",background:"transparent",border:"none",padding:"7px 10px",cursor:"pointer",fontSize:"14px"}}>↻</button>
+          {isOwner&&<button onClick={()=>setRole(null)} style={{color:"var(--red)",background:"transparent",border:"none",padding:"7px 10px",cursor:"pointer",fontSize:"11px",fontFamily:"monospace"}}>LOGOUT</button>}
+          {!isOwner&&<button onClick={()=>setRole(null)} style={{color:"var(--muted)",background:"transparent",border:"none",padding:"7px 10px",cursor:"pointer",fontSize:"11px",fontFamily:"monospace"}}>EXIT</button>}
+        </div>
+      </nav>
+
+      <div className="container">
+        {loading&&<Spinner msg="Loading from database..."/>}
+        {!loading&&<>
+
+        {/* ── OWNER DASHBOARD ── */}
+        {tab==="dashboard"&&isOwner&&<>
+          <div className="page-title">📊 Owner Dashboard</div>
+          <div className="page-sub">Today — {TODAY.toDateString()}</div>
+          <div className="stats">
+            {[[todaySales.length,"Sales Today","var(--gold)"],[GHS(todayCash),"Cash Today","var(--green)"],[GHS(todayMomo),"MoMo Today","var(--blue)"],[GHS(todayCash+todayMomo),"Total Revenue","var(--gold)"]].map(([val,lbl,col])=>(
+              <div key={lbl} className="stat" style={{borderLeftColor:col}}>
+                <div className="stat-val" style={{color:col,fontSize:typeof val==="number"?"24px":"16px"}}>{val}</div>
+                <div className="stat-lbl">{lbl}</div>
+              </div>
+            ))}
+          </div>
+          <div className="stats">
+            {[[products.length,"Products","var(--muted)"],[lowStock.length,"Low Stock","var(--red)"],[GHS(stockValue),"Stock Value","var(--green)"],[closing.length,"Days Closed","var(--blue)"]].map(([val,lbl,col])=>(
+              <div key={lbl} className="stat" style={{borderLeftColor:col}}>
+                <div className="stat-val" style={{color:col,fontSize:typeof val==="number"?"24px":"16px"}}>{val}</div>
+                <div className="stat-lbl">{lbl}</div>
+              </div>
+            ))}
+          </div>
+          {lowStock.length>0&&<div className="card" style={{borderColor:"rgba(248,81,73,0.4)"}}>
+            <div className="card-title" style={{color:"var(--red)"}}>⚠ Restock Alert — {lowStock.length} item{lowStock.length!==1?"s":""} need attention</div>
+            {lowStock.map(p=>(
+              <div key={p.id} className="restock-item">
+                <div>
+                  <div style={{fontWeight:"600"}}>{p.name}</div>
+                  <div style={{fontSize:"12px",color:"var(--red)",marginTop:"2px"}}>Stock: {p.current_stock} {p.unit} | Reorder at: {p.reorder_level}</div>
+                </div>
+                <span className={`badge ${Number(p.current_stock)===0?"badge-red":"badge-orange"}`}>{Number(p.current_stock)===0?"OUT":"LOW"}</span>
+              </div>
+            ))}
+          </div>}
+          <div className="card">
+            <div className="card-title">Recent Sales</div>
+            <div style={{overflowX:"auto"}}>
+              <table>
+                <thead><tr><th>Time</th><th>Attendant</th><th>Payment</th><th>Ref</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody>
+                  {[...todaySales].reverse().slice(0,10).map(s=>{
+                    const items=salesItems.filter(i=>i.sale_id===s.id);
+                    return <tr key={s.id}>
+                      <td className="mono" style={{fontSize:"12px"}}>{fmtTime(s.timestamp)}</td>
+                      <td>{s.attendant_name}</td>
+                      <td><span className={`badge ${s.payment_method==="Cash"?"badge-green":s.payment_method.includes("MTN")?"badge-gold":"badge-blue"}`}>{s.payment_method}</span></td>
+                      <td className="mono" style={{fontSize:"11px",color:"var(--muted)"}}>{s.momo_reference||"—"}</td>
+                      <td className="mono" style={{color:"var(--gold)",fontWeight:"700"}}>{GHS(s.total_amount)}</td>
+                      <td><button className="btn btn-ghost btn-sm" onClick={()=>setDocModal({type:"receipt",sale:s,items})}>🧾 Receipt</button></td>
+                    </tr>;
+                  })}
+                  {todaySales.length===0&&<tr><td colSpan={6} style={{textAlign:"center",color:"var(--muted)",padding:"20px"}}>No sales today.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>}
+
+        {/* ── POS ── */}
+        {tab==="pos"&&<>
+          <div className="page-title">🛒 Point of Sale</div>
+          <div className="page-sub">Select products to build the cart, then generate an invoice or complete the sale.</div>
+          <div className="grid2">
+            {/* Add to cart */}
+            <div className="card">
+              <div className="card-title">Add Item</div>
+              <div className="form-group">
+                <label>Product</label>
+                <select value={selProduct} onChange={e=>setSelProduct(e.target.value)}>
+                  <option value="">-- Select product --</option>
+                  {products.map(p=>(
+                    <option key={p.id} value={p.id} disabled={Number(p.current_stock)===0}>
+                      {p.name} — {GHS(p.selling_price)} {Number(p.current_stock)===0?"[OUT]":`[${p.current_stock}]`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Quantity</label>
+                <input type="number" value={selQty} onChange={e=>setSelQty(e.target.value)} min="1"/>
+              </div>
+              <button className="btn btn-gold btn-full" onClick={addToCart}>+ Add to Cart</button>
+            </div>
+
+            {/* Cart */}
+            <div className="card">
+              <div className="card-title">Cart</div>
+              {cart.length===0
+                ?<div style={{color:"var(--muted)",fontSize:"13px",textAlign:"center",padding:"20px 0"}}>Cart is empty</div>
+                :cart.map(item=>(
+                  <div key={item.product_id} className="cart-item">
+                    <div>
+                      <div style={{fontWeight:"600",fontSize:"14px"}}>{item.name}</div>
+                      <div style={{fontSize:"12px",color:"var(--muted)"}}>{item.qty} × {GHS(item.price)}</div>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
+                      <span className="mono" style={{color:"var(--gold)",fontWeight:"700"}}>{GHS(item.total)}</span>
+                      <button className="btn btn-red btn-sm" onClick={()=>removeFromCart(item.product_id)}>✕</button>
+                    </div>
+                  </div>
+                ))
+              }
+              {cart.length>0&&<>
+                <hr className="divider"/>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontWeight:"700"}}>Total</span>
+                  <span className="mono" style={{fontSize:"20px",fontWeight:"700",color:"var(--gold)"}}>{GHS(cartTotal)}</span>
+                </div>
+              </>}
+            </div>
+          </div>
+
+          {/* Checkout */}
+          {cart.length>0&&<div className="card">
+            <div className="card-title">Complete Sale</div>
+            <div className="grid2">
+              <div className="form-group">
+                <label>Attendant Name *</label>
+                <input value={attendant} onChange={e=>setAttendant(e.target.value)} placeholder="e.g. Kofi Mensah"/>
+              </div>
+              <div className="form-group">
+                <label>Payment Method *</label>
+                <select value={payMethod} onChange={e=>setPayMethod(e.target.value)}>
+                  <option value="">-- Select --</option>
+                  <option>Cash</option>
+                  <option>MTN MoMo</option>
+                  <option>Telecel Cash</option>
+                  <option>AT Money</option>
+                </select>
+              </div>
+            </div>
+            {isMomoPayment&&<div className="form-group">
+              <label>MoMo Transaction ID / Reference *</label>
+              <input value={momoRef} onChange={e=>setMomoRef(e.target.value)} placeholder="e.g. MTN1234567890" style={{fontFamily:"monospace",letterSpacing:"1px"}}/>
+              <div style={{fontSize:"11px",color:"var(--muted)",marginTop:"4px"}}>⚠ Ask customer for confirmation SMS reference. This is mandatory.</div>
+            </div>}
+            <div style={{display:"flex",gap:"10px",flexWrap:"wrap"}}>
+              <button className="btn btn-ghost" onClick={generateInvoice}>📄 Generate Invoice</button>
+              <button className="btn btn-green" style={{flex:1}} onClick={completeSale} disabled={syncing}>
+                {syncing?<><span className="spinner"/>  Saving...</>:"✓ COMPLETE SALE & GET RECEIPT"}
+              </button>
+              <button className="btn btn-red btn-sm" onClick={()=>setCart([])}>🗑</button>
+            </div>
+          </div>}
+        </>}
+
+        {/* ── INVENTORY ── */}
+        {tab==="inventory"&&<>
+          <div className="page-title">📦 Inventory</div>
+          <div className="page-sub">{isOwner?"Manage stock levels, add products and restock.":"Current stock levels."}</div>
+
+          {lowStock.length>0&&<div className="card" style={{borderColor:"rgba(248,81,73,0.4)"}}>
+            <div className="card-title" style={{color:"var(--red)"}}>⚠ Restock Shopping List</div>
+            {lowStock.map(p=>(
+              <div key={p.id} className="restock-item">
+                <div>
+                  <div style={{fontWeight:"600"}}>{p.name}</div>
+                  <div style={{fontSize:"12px",color:"var(--red)",marginTop:"2px"}}>Stock: {p.current_stock} {p.unit} | Cost: {GHS(p.cost_price)}/{p.unit}</div>
+                </div>
+                <span className={`badge ${Number(p.current_stock)===0?"badge-red":"badge-orange"}`}>{Number(p.current_stock)===0?"OUT":"LOW"}</span>
+              </div>
+            ))}
+          </div>}
+
+          {isOwner&&<div className="grid2">
+            <div className="card">
+              <div className="card-title">Add New Product</div>
+              <div className="form-group"><label>Product Name *</label><input value={newProduct.name} onChange={e=>setNewProduct(p=>({...p,name:e.target.value}))} placeholder="e.g. Cement 50kg"/></div>
+              <div className="form-group"><label>Unit</label><input value={newProduct.unit} onChange={e=>setNewProduct(p=>({...p,unit:e.target.value}))} placeholder="pcs / bag / roll"/></div>
+              <div className="grid2">
+                <div className="form-group"><label>Cost Price</label><input type="number" value={newProduct.cost_price} onChange={e=>setNewProduct(p=>({...p,cost_price:e.target.value}))} placeholder="0.00"/></div>
+                <div className="form-group"><label>Selling Price *</label><input type="number" value={newProduct.selling_price} onChange={e=>setNewProduct(p=>({...p,selling_price:e.target.value}))} placeholder="0.00"/></div>
+              </div>
+              <div className="grid2">
+                <div className="form-group"><label>Opening Stock</label><input type="number" value={newProduct.current_stock} onChange={e=>setNewProduct(p=>({...p,current_stock:e.target.value}))}/></div>
+                <div className="form-group"><label>Reorder Level</label><input type="number" value={newProduct.reorder_level} onChange={e=>setNewProduct(p=>({...p,reorder_level:e.target.value}))}/></div>
+              </div>
+              <button className="btn btn-gold btn-full" onClick={addProduct} disabled={syncing}>{syncing?"Saving...":"+ Add Product"}</button>
+            </div>
+            <div className="card">
+              <div className="card-title">Restock Product</div>
+              <div className="form-group"><label>Select Product</label>
+                <select value={restockId} onChange={e=>setRestockId(e.target.value)}>
+                  <option value="">-- Choose --</option>
+                  {products.map(p=><option key={p.id} value={p.id}>{p.name} ({p.current_stock} {p.unit})</option>)}
+                </select>
+              </div>
+              <div className="form-group"><label>Quantity to Add *</label><input type="number" value={restockQty} onChange={e=>setRestockQty(e.target.value)} placeholder="e.g. 20"/></div>
+              <div className="form-group"><label>New Cost Price (optional)</label><input type="number" value={restockCost} onChange={e=>setRestockCost(e.target.value)} placeholder="Leave blank to keep current"/></div>
+              <button className="btn btn-green btn-full" onClick={restockProduct} disabled={syncing}>{syncing?"Saving...":"+ Add Stock"}</button>
+            </div>
+          </div>}
+
+          <div className="card">
+            <div className="card-title">All Products</div>
+            <div style={{overflowX:"auto"}}>
+              <table>
+                <thead><tr><th>Product</th><th>Unit</th><th>Stock</th><th>Reorder</th>{isOwner&&<><th>Cost</th><th>Price</th><th>Margin</th></>}<th>Status</th></tr></thead>
+                <tbody>
+                  {products.map(p=>(
+                    <tr key={p.id} className={Number(p.current_stock)<=Number(p.reorder_level)?"low-stock-row":""}>
+                      <td style={{fontWeight:"600"}}>{p.name}</td>
+                      <td className="mono">{p.unit}</td>
+                      <td className="mono" style={{color:Number(p.current_stock)<=Number(p.reorder_level)?"var(--red)":"var(--green)",fontWeight:"700"}}>{p.current_stock}</td>
+                      <td className="mono">{p.reorder_level}</td>
+                      {isOwner&&<><td className="mono">{GHS(p.cost_price)}</td><td className="mono">{GHS(p.selling_price)}</td><td className="mono" style={{color:"var(--gold)"}}>{Number(p.selling_price)>0?Math.round((Number(p.selling_price)-Number(p.cost_price))/Number(p.selling_price)*100):0}%</td></>}
+                      <td><span className={`badge ${Number(p.current_stock)===0?"badge-red":Number(p.current_stock)<=Number(p.reorder_level)?"badge-orange":"badge-green"}`}>{Number(p.current_stock)===0?"OUT":Number(p.current_stock)<=Number(p.reorder_level)?"LOW":"OK"}</span></td>
+                    </tr>
+                  ))}
+                  {products.length===0&&<tr><td colSpan={8} style={{textAlign:"center",color:"var(--muted)",padding:"20px"}}>No products yet.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>}
+
+        {/* ── RECONCILIATION ── */}
+        {tab==="reconcile"&&isOwner&&<>
+          <div className="page-title">💰 End of Day Reconciliation</div>
+          <div className="page-sub">Count your cash and MoMo first, then submit to see system totals.</div>
+
+          <div className="card">
+            <div className="card-title">Today's Overview</div>
+            <div className="recon-row"><span style={{color:"var(--muted)"}}>Total Transactions</span><span className="mono">{todaySales.length}</span></div>
+            <div className="recon-row"><span style={{color:"var(--muted)"}}>Total Revenue</span><span className="mono" style={{color:"var(--gold)",fontWeight:"700"}}>{GHS(todayCash+todayMomo)}</span></div>
+          </div>
+
+          {todayClosed&&!reconResult
+            ?<div className="alert alert-warn">⚠ Today's books have already been closed by {todayClosed.closed_by}.</div>
+            :!reconResult&&<div className="card">
+              <div className="card-title">Blind Close — Count First</div>
+              <p style={{fontSize:"13px",color:"var(--muted)",marginBottom:"16px"}}>Count all physical cash and check your MoMo wallet balance. Enter the amounts below before clicking submit.</p>
+              <div className="grid2">
+                <div className="form-group"><label>Physical Cash on Hand (GHS) *</label><input type="number" value={actualCash} onChange={e=>setActualCash(e.target.value)} placeholder="0.00" style={{fontSize:"20px",fontFamily:"monospace"}}/></div>
+                <div className="form-group"><label>MoMo Wallet Balance (GHS) *</label><input type="number" value={actualMomo} onChange={e=>setActualMomo(e.target.value)} placeholder="0.00" style={{fontSize:"20px",fontFamily:"monospace"}}/></div>
+              </div>
+              <div className="form-group"><label>Closed By *</label><input value={reconBy} onChange={e=>setReconBy(e.target.value)} placeholder="Attendant name"/></div>
+              <button className="btn btn-gold btn-full" onClick={submitRecon} disabled={syncing} style={{fontSize:"15px",padding:"14px"}}>{syncing?"Saving...":"🔒 SUBMIT & REVEAL TOTALS"}</button>
+            </div>
+          }
+
+          {reconResult&&<div className="card" style={{borderColor:reconResult.status==="Matched"?"rgba(63,185,80,0.4)":"rgba(248,81,73,0.4)"}}>
+            <div className="card-title">Result — {reconResult.date}</div>
+            <div style={{textAlign:"center",marginBottom:"16px"}}>
+              <span className={`badge ${reconResult.status==="Matched"?"badge-green":"badge-red"}`} style={{fontSize:"14px",padding:"8px 20px"}}>
+                {reconResult.status==="Matched"?"✓ MATCHED":"⚠ DISCREPANCY"}
+              </span>
+            </div>
+            {[["Expected Cash",GHS(reconResult.expected_cash)],["Actual Cash",GHS(reconResult.actual_cash)],["Cash Difference",`${reconResult.cash_diff>=0?"+":""}${GHS(reconResult.cash_diff)}`],["Expected MoMo",GHS(reconResult.expected_momo)],["Actual MoMo",GHS(reconResult.actual_momo)],["MoMo Difference",`${reconResult.momo_diff>=0?"+":""}${GHS(reconResult.momo_diff)}`],["Closed By",reconResult.closed_by]].map(([l,v])=>(
+              <div key={l} className="recon-row"><span style={{color:"var(--muted)"}}>{l}</span><span className="mono" style={{fontWeight:"700",color:l.includes("Difference")?(reconResult[l.toLowerCase().replace(" ","_")]<0?"var(--red)":reconResult[l.toLowerCase().replace(" ","_")]>0?"var(--green)":"var(--gold)"):"var(--text)"}}>{v}</span></div>
+            ))}
+            <button className="btn btn-ghost btn-full" style={{marginTop:"12px"}} onClick={()=>setReconResult(null)}>← Back</button>
+          </div>}
+        </>}
+
+        {/* ── HISTORY ── */}
+        {tab==="history"&&isOwner&&<>
+          <div className="page-title">📋 Sales History</div>
+          <div className="page-sub">Complete record of all transactions.</div>
+          <div className="stats">
+            {[[sales.length,"Total Sales","var(--gold)"],[GHS(sales.reduce((s,x)=>s+Number(x.total_amount),0)),"Total Revenue","var(--green)"],[GHS(sales.filter(s=>s.payment_method==="Cash").reduce((s,x)=>s+Number(x.total_amount),0)),"Cash","var(--green)"],[GHS(sales.filter(s=>s.payment_method!=="Cash").reduce((s,x)=>s+Number(x.total_amount),0)),"MoMo","var(--blue)"]].map(([val,lbl,col])=>(
+              <div key={lbl} className="stat" style={{borderLeftColor:col}}>
+                <div className="stat-val" style={{color:col,fontSize:typeof val==="number"?"24px":"15px"}}>{val}</div>
+                <div className="stat-lbl">{lbl}</div>
+              </div>
+            ))}
+          </div>
+          <div className="card">
+            <div className="card-title">All Transactions</div>
+            <div style={{overflowX:"auto"}}>
+              <table>
+                <thead><tr><th>Date/Time</th><th>Attendant</th><th>Payment</th><th>Ref</th><th>Total</th><th>Action</th></tr></thead>
+                <tbody>
+                  {[...sales].reverse().map(s=>{
+                    const items=salesItems.filter(i=>i.sale_id===s.id);
+                    return <tr key={s.id}>
+                      <td className="mono" style={{fontSize:"11px"}}>{fmtDateTime(s.timestamp)}</td>
+                      <td>{s.attendant_name}</td>
+                      <td><span className={`badge ${s.payment_method==="Cash"?"badge-green":s.payment_method.includes("MTN")?"badge-gold":"badge-blue"}`}>{s.payment_method}</span></td>
+                      <td className="mono" style={{fontSize:"11px",color:"var(--muted)"}}>{s.momo_reference||"—"}</td>
+                      <td className="mono" style={{color:"var(--gold)",fontWeight:"700"}}>{GHS(s.total_amount)}</td>
+                      <td><button className="btn btn-ghost btn-sm" onClick={()=>setDocModal({type:"receipt",sale:s,items})}>🧾 Receipt</button></td>
+                    </tr>;
+                  })}
+                  {sales.length===0&&<tr><td colSpan={6} style={{textAlign:"center",color:"var(--muted)",padding:"20px"}}>No sales yet.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>}
+
+        </>}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App/>, document.getElementById("root"));
+</script>
+</body>
+</html>
