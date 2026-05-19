@@ -307,7 +307,7 @@ function App(){
   const [docModal,setDocModal]   = useState(null); // {type, sale, items}
 
   // Inventory
-  const [newProduct,setNewProduct] = useState({name:"",unit:"pcs",cost_price:"",selling_price:"",current_stock:"0",reorder_level:"5"});
+  const [newProduct,setNewProduct] = useState({name:"",unit:"pcs",cost_price:"",selling_price:"",current_stock:"0",reorder_level:"1"});
   const [restockId,setRestockId]   = useState("");
   const [restockQty,setRestockQty] = useState("");
   const [restockCost,setRestockCost] = useState("");
@@ -449,7 +449,7 @@ function App(){
       await dbPost("Products",row);
       const db=lsLoad(); db.products.push(row); lsSave(db);
       setProducts(p=>[...p,row]);
-      setNewProduct({name:"",unit:"pcs",cost_price:"",selling_price:"",current_stock:"0",reorder_level:"5"});
+      setNewProduct({name:"",unit:"pcs",cost_price:"",selling_price:"",current_stock:"0",reorder_level:"1"});
       showToast("✓ Product added");
     } catch(e){ showToast("Error: "+e.message,"var(--red)"); }
     setSyncing(false);
