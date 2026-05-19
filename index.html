@@ -523,6 +523,9 @@ function App(){
   };
 
   // ── ROLE SELECTION ────────────────────────────────────────────────────────
+  const isMomoPayment = ["MTN MoMo","Telecel Cash","AT Money"].includes(payMethod);
+  const isOwner = role==="owner";
+
   if(!role) return (
     <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"20px"}}>
       {loading&&<Spinner msg="Loading data..."/>}
@@ -570,9 +573,6 @@ function App(){
       </>}
     </div>
   );
-
-  const isMomoPayment = ["MTN MoMo","Telecel Cash","AT Money"].includes(payMethod);
-  const isOwner = role==="owner";
 
   // Nav tabs based on role
   const ownerTabs  = [["dashboard","📊 Dashboard"],["pos","🛒 POS"],["inventory","📦 Inventory"],["reconcile","💰 End of Day"],["history","📋 History"]];
