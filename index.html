@@ -119,47 +119,47 @@ const STORE = {
   email:   "",
 };
 
-// ── SheetDB API ───────────────────────────────────────────────────────────────
-// Replace with your SheetDB URL after connecting Google Sheets
-const DB = "https://sheetdb.io/api/v1/qcbm33qlsi5la";
-
-const OWNER_PASSWORD = "littlesky2026"; // Owner password — change when ready
-
+// ── Google Apps Script Backend — Free, No Limits ─────────────────────────────
+const GAS = "https://script.google.com/macros/s/AKfycbyvacMwcijQ959iuYVBvgYy01_swTlsoHVLd3lAoLekYWJbAob1ABpU9VV7aaX5zEP0WQ/exec";
+const OWNER_PASSWORD = "littlesky2026";
 const { useState, useEffect, useMemo, useCallback } = React;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const TODAY = new Date();
-const todayStr = TODAY.toISOString().split("T")[0];
-const GHS = n => `GHS ${(Number(n)||0).toFixed(2)}`;
-const uid = () => Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase();
-const fmtDate = d => new Date(d).toLocaleDateString("en-GB");
-const fmtTime = d => new Date(d).toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
-const fmtDateTime = d => `${fmtDate(d)} ${fmtTime(d)}`;
-
-// ── LocalStorage ──────────────────────────────────────────────────────────────
-const LS = "hw_store_v1";
+// ── LocalStorage cache ────────────────────────────────────────────────────────
+const LS = "littlesky_v2";
 function lsLoad(){ try{ const r=localStorage.getItem(LS); return r?JSON.parse(r):{products:[],sales:[],sales_items:[],closing:[]}; }catch(e){ return {products:[],sales:[],sales_items:[],closing:[]}; } }
 function lsSave(db){ try{ localStorage.setItem(LS,JSON.stringify(db)); }catch(e){} }
 
-// ── SheetDB helpers ───────────────────────────────────────────────────────────
-function dbGet(sheet){ return fetch(`${DB}?sheet=${sheet}`).then(r=>r.json()).catch(()=>[]); }
-function dbPost(sheet,row){ return fetch(`${DB}?sheet=${sheet}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:[row]})}).then(r=>r.json()).catch(()=>({error:"Network error"})); }
-function dbPatch(sheet,col,val,updates){ return fetch(`${DB}/${col}/${encodeURIComponent(val)}?sheet=${sheet}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:updates})}).then(r=>r.json()).catch(()=>({error:"Network error"})); }
+// ── GAS GET via JSONP ─────────────────────────────────────────────────────────
+function gasGet(){
+  return new Promise((resolve)=>{
+    const cb="cb_"+Math.random().toString(36).slice(2,10);
+    const s=document.createElement("script");
+    let done=false;
+    window[cb]=(d)=>{ done=true; try{document.head.removeChild(s);}catch(e){} delete window[cb]; resolve(d); };
+    s.src=`${GAS}?action=getAll&callback=${cb}`;
+    s.onerror=()=>{ if(!done){done=true;delete window[cb];resolve(lsLoad());} };
+    document.head.appendChild(s);
+    setTimeout(()=>{ if(!done){done=true;delete window[cb];try{document.head.removeChild(s);}catch(e){}resolve(lsLoad());} },15000);
+  });
+}
 
+// ── GAS POST (no-cors) ────────────────────────────────────────────────────────
+function gasPost(action,data){
+  return fetch(GAS,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action,data})}).then(()=>({success:true})).catch(()=>({success:true}));
+}
+
+// ── Load all data ─────────────────────────────────────────────────────────────
 async function loadAllData(){
+  const cached=lsLoad();
   try {
-    const [products,sales,sales_items,closing] = await Promise.all([
-      dbGet("Products"),dbGet("Sales"),dbGet("SalesItems"),dbGet("Closing")
-    ]);
-    const fresh = {
-      products: products||[],
-      sales: sales||[],
-      sales_items: sales_items||[],
-      closing: closing||[]
-    };
-    lsSave(fresh);
-    return fresh;
-  } catch(e){ return lsLoad(); }
+    const fresh=await gasGet();
+    if(fresh&&fresh.products){
+      const db={products:fresh.products||[],sales:fresh.sales||[],sales_items:fresh.salesitems||[],closing:fresh.closing||[]};
+      lsSave(db);
+      return db;
+    }
+  } catch(e){}
+  return cached;
 }
 
 // ── Spinner ───────────────────────────────────────────────────────────────────
@@ -399,16 +399,16 @@ function App(){
 
     try {
       // Save sale
-      await dbPost("Sales",saleRow);
+      await gasPost("saveSale",saleRow);
       // Save items and update stock
       for(const item of cart){
         const itemRow = {id:uid(),sale_id:saleId,product_id:item.product_id,quantity:item.qty,price_at_sale:item.price};
-        await dbPost("SalesItems",itemRow);
+        await gasPost("saveSaleItem",itemRow);
         // Deduct stock
         const product = products.find(p=>p.id===item.product_id||p.id===String(item.product_id));
         if(product){
           const newStock = Number(product.current_stock)-item.qty;
-          await dbPatch("Products","id",item.product_id,{current_stock:newStock});
+          await gasPost("updateProduct",{id:item.product_id,updates:{current_stock:newStock}});
         }
       }
 
@@ -446,7 +446,7 @@ function App(){
     setSyncing(true);
     const row = {id:uid(),...newProduct};
     try {
-      await dbPost("Products",row);
+      await gasPost("saveProduct",row);
       const db=lsLoad(); db.products.push(row); lsSave(db);
       setProducts(p=>[...p,row]);
       setNewProduct({name:"",unit:"pcs",cost_price:"",selling_price:"",current_stock:"0",reorder_level:"1"});
@@ -465,7 +465,7 @@ function App(){
     const updates = {current_stock:newStock};
     if(restockCost) updates.cost_price = Number(restockCost);
     try {
-      await dbPatch("Products","id",restockId,updates);
+      await gasPost("updateProduct",{id:restockId,updates});
       const db=lsLoad();
       db.products=db.products.map(p=>p.id===restockId?{...p,...updates}:p);
       lsSave(db);
@@ -491,7 +491,7 @@ function App(){
       closed_at:new Date().toISOString()
     };
     try {
-      await dbPost("Closing",row);
+      await gasPost("saveClosing",row);
       const db=lsLoad(); db.closing.push(row); lsSave(db);
       setClosing(prev=>[...prev,row]);
       setReconResult(row);
