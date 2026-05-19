@@ -286,7 +286,7 @@ function App(){
   const [tab,setTab]         = useState("pos");
   const [loading,setLoading] = useState(false);
   const [syncing,setSyncing] = useState(false);
-  const [dbOk,setDbOk]       = useState(false);
+  const [dbOk,setDbOk]       = useState(true); // Default true so login shows immediately
   const [toast,setToast]     = useState(null);
 
   // Data
@@ -328,16 +328,31 @@ function App(){
   // Load data
   const loadData = useCallback(async()=>{
     setLoading(true);
-    const cached = lsLoad();
-    if(cached.products.length){ setProducts(cached.products); setSales(cached.sales); setSalesItems(cached.sales_items||[]); setClosing(cached.closing||[]); setDbOk(true); setLoading(false); }
     try {
+      // Show cached data instantly
+      const cached = lsLoad();
+      if(cached.products&&cached.products.length>0){
+        setProducts(cached.products);
+        setSales(cached.sales||[]);
+        setSalesItems(cached.sales_items||[]);
+        setClosing(cached.closing||[]);
+        setDbOk(true);
+        setLoading(false);
+      }
+      // Fetch fresh from GAS
       const fresh = await loadAllData();
-      setProducts(fresh.products||[]);
-      setSales(fresh.sales||[]);
-      setSalesItems(fresh.sales_items||fresh.SalesItems||[]);
-      setClosing(fresh.closing||fresh.Closing||[]);
-      setDbOk(true);
-    } catch(e){}
+      if(fresh&&fresh.products){
+        setProducts(fresh.products||[]);
+        setSales(fresh.sales||[]);
+        setSalesItems(fresh.sales_items||[]);
+        setClosing(fresh.closing||[]);
+        setDbOk(true);
+      } else {
+        setDbOk(true);
+      }
+    } catch(e){
+      setDbOk(true); // Still show app even if GAS fails
+    }
     setLoading(false);
   },[]);
 
